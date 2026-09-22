@@ -1,0 +1,54 @@
+{
+  "expo": {
+    "name": "Z'eloura",
+    "slug": "mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#17130F"
+    },
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "usesCleartextTraffic": true,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.yury_4lee.mobile"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36
+          }
+        }
+      ],
+      "expo-status-bar",
+    "expo-sqlite",
+    [
+      "expo-image-picker",
+      {
+        "photosPermission": "Permite seleccionar una foto para tu perfil.",
+        "cameraPermission": "Permite tomar una foto para tu perfil."
+      }
+    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "2a89dbfd-08f5-42bf-ae34-641cbd9a0935"
+      }
+    }
+  }
+}
