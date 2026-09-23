@@ -1,3 +1,6 @@
+if (process.env.MYSQL_HOST) {
+  module.exports = require('./db-mysql');
+} else {
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const bcrypt = require('bcryptjs');
@@ -124,3 +127,4 @@ db.serialize(() => {
 });
 
 module.exports = db;
+}

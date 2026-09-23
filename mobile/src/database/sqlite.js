@@ -32,15 +32,15 @@ const getDatabase = async () => {
   try {
     await db.execAsync('ALTER TABLE sesion_local ADD COLUMN password_hash TEXT;');
   } catch {
-    // La columna ya existe.
+   
   }
 
-  // Compatibilidad con la base local creada por versiones anteriores.
+
   for (const column of ['plato TEXT', 'nota TEXT', 'foto_uri TEXT']) {
     try {
       await db.execAsync(`ALTER TABLE reservas_local ADD COLUMN ${column};`);
     } catch {
-      // La columna ya existe.
+   
     }
   }
 

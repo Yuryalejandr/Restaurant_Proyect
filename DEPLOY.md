@@ -15,6 +15,12 @@
 
 El servicio usa un disco persistente en `/var/data`, por lo que SQLite conserva usuarios, menú y reservas después de reinicios.
 
+### MySQL online opcional
+
+SQLite sigue siendo el respaldo cuando `MYSQL_HOST` está vacío. Para usar una base MySQL online desde Render, define también `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_DATABASE`, `MYSQL_USER` y `MYSQL_PASSWORD` en las variables del servicio. Al reiniciar, el backend crea las tablas automáticamente y la APK conserva la misma URL.
+
+MySQL Workbench puede conectarse a esa base usando los mismos datos. Una instalación de MySQL en `localhost` solo sirve para pruebas locales; Render no puede acceder a ella.
+
 ## APK conectada al backend público
 
 El proyecto usa por defecto `https://zeloura-api.onrender.com/api`, que corresponde al servicio definido en `render.yaml`. Si Render asigna otro nombre, crea `mobile/.env` con la URL que muestre Render:

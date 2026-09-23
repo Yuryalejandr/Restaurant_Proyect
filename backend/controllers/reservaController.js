@@ -56,9 +56,13 @@ const guardarReserva = (reserva, callback) => {
 
   const insertar = () => {
     db.run(
-      `INSERT OR REPLACE INTO reservas
+      `INSERT INTO reservas
         (id, usuario_id, fecha, hora, personas, estado, sincronizado, plato, nota)
-        VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?)`,
+        VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?)
+        ON DUPLICATE KEY UPDATE
+          usuario_id = VALUES(usuario_id), fecha = VALUES(fecha), hora = VALUES(hora),
+          personas = VALUES(personas), estado = VALUES(estado), sincronizado = VALUES(sincronizado),
+          plato = VALUES(plato), nota = VALUES(nota)`,
       [
         reserva.id,
         reserva.usuario_id,
@@ -160,7 +164,7 @@ exports.actualizarMesasActivas = (req, res) => {
     return res.status(400).json({ mensaje: 'Indica entre 1 y 100 mesas activas.' });
   }
   db.run(
-    "INSERT INTO configuracion_restaurante (clave, valor) VALUES ('mesas_activas', ?) ON CONFLICT(clave) DO UPDATE SET valor = excluded.valor",
+    "INSERT INTO configuracion_restaurante (clave, valor) VALUES ('mesas_activas', ?) ON DUPLICATE KEY UPDATE valor = VALUES(valor)",
     [mesasActivas],
     function (err) {
     if (err) return res.status(500).json({ mensaje: err.message });
