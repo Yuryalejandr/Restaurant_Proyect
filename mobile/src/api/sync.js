@@ -11,17 +11,26 @@ export const sincronizarConBackend = async () => {
   const sesion = await obtenerSesionLocal();
   if (!sesion || sesion.token === 'offline') return false;
 
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15000);
+
   try {
     const response = await fetch(`${API_URL}/reservas/sync`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${sesion.token}` },
       body: JSON.stringify({ reservas: pendientes }),
+      signal: controller.signal,
     });
-    if (!response.ok) return false;
+    if (!response.ok) {
+      console.error('Error del backend al sincronizar:', await response.text());
+      return false;
+    }
     await marcarComoSincronizados();
     return true;
   } catch (error) {
     console.error('Error al sincronizar con el backend:', error);
     return false;
+  } finally {
+    clearTimeout(timeout);
   }
 };

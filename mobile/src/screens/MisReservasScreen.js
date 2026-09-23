@@ -12,6 +12,7 @@ export default function MisReservasScreen({ route, navigation }) {
   const cargarReservas = useCallback(async () => {
     setCargando(true);
     try {
+      await sincronizarConBackend();
       const locales = await obtenerTodasReservasLocales();
       setReservas(locales.filter((reserva) => reserva.usuario_id === user.id));
     } catch (error) {
