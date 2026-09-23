@@ -12,9 +12,13 @@ export default function MisReservasScreen({ route, navigation }) {
   const cargarReservas = useCallback(async () => {
     setCargando(true);
     try {
-      await sincronizarConBackend();
       const locales = await obtenerTodasReservasLocales();
       setReservas(locales.filter((reserva) => reserva.usuario_id === user.id));
+      sincronizarConBackend().then(async (sincronizado) => {
+        if (!sincronizado) return;
+        const actualizadas = await obtenerTodasReservasLocales();
+        setReservas(actualizadas.filter((reserva) => reserva.usuario_id === user.id));
+      }).catch((error) => console.warn('No se pudieron sincronizar las reservas:', error.message));
     } catch (error) {
       console.error('No se pudieron leer las reservas:', error);
     } finally {
