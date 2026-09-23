@@ -17,11 +17,13 @@ El servicio usa un disco persistente en `/var/data`, por lo que SQLite conserva 
 
 ## APK conectada al backend público
 
-En `mobile/.env` configura la URL real:
+El proyecto usa por defecto `https://zeloura-api.onrender.com/api`, que corresponde al servicio definido en `render.yaml`. Si Render asigna otro nombre, crea `mobile/.env` con la URL que muestre Render:
 
 ```env
 EXPO_PUBLIC_API_URL=https://TU-SERVICIO.onrender.com/api
 ```
+
+Comprueba primero que `https://TU-SERVICIO.onrender.com/` responda `API del Restaurante funcionando correctamente`. Para probar el backend local desde Expo Go, usa en `mobile/.env` la IP LAN del computador, por ejemplo `http://192.168.1.8:3000/api`.
 
 Después genera una nueva APK:
 
@@ -34,4 +36,4 @@ La APK anterior conserva la IP local y no puede cambiar su URL después de compi
 
 ## Funcionamiento sin internet
 
-Después del primer inicio de sesión con internet, la app conserva la sesión y permite crear o cancelar reservas sin conexión. Las reservas pendientes se sincronizan automáticamente cuando vuelve internet. El primer login y la administración requieren conexión al backend público.
+Con el backend público disponible, el login, la carta, la disponibilidad y la sincronización funcionan desde cualquier red. Sin internet, usa `Continuar sin conexión`: permite crear reservas locales, pero no puede publicarlas en el servidor hasta que vuelvas a iniciar sesión con una cuenta real online.

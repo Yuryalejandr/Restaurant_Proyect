@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Alert, Image, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import * as Crypto from 'expo-crypto';
 import { API_URL } from '../api/config';
-import { guardarSesionLocal } from '../database/sqlite';
+import { guardarSesionLocal, obtenerCredencialLocal } from '../database/sqlite';
 import { colors } from '../theme';
 
 export default function LoginScreen({ navigation }) {
@@ -36,18 +37,52 @@ export default function LoginScreen({ navigation }) {
         return;
       }
 
-      await guardarSesionLocal(data.user, data.token);
-
-      navigation.reset({
-        index: 0,
-        routes: [{ name: data.user.rol === 'admin' ? 'AdminReservas' : 'Inicio', params: { user: data.user, token: data.token } }],
-      });
+      const passwordHash = await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, password);
+      await guardarSesionLocal(data.user, data.token, passwordHash);
+      entrar(data.user, data.token);
     } catch (error) {
       console.error(error);
-      Alert.alert('Sin conexión', `No se pudo conectar con el servidor en ${API_URL}. Comprueba que el teléfono esté en la misma red Wi-Fi y que el firewall permita el puerto 3000.`);
+      const credencial = await obtenerCredencialLocal();
+      const passwordHash = credencial
+        ? await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, password)
+        : null;
+      const usuarioLocal = credencial ? JSON.parse(credencial.usuario) : null;
+      const coincide = usuarioLocal
+        && usuarioLocal.email.toLowerCase() === correo.trim().toLowerCase()
+        && credencial.password_hash === passwordHash;
+
+      if (coincide) {
+        entrar(usuarioLocal, credencial.token);
+      } else {
+        Alert.alert('Sin conexión', `No se pudo conectar con el servidor en ${API_URL}. Ingresa una vez con conexión para habilitar el acceso offline.`);
+      }
     } finally {
       setCargando(false);
     }
+  };
+
+  const continuarSinConexion = async () => {
+    setCargando(true);
+    try {
+      const user = {
+        id: 0,
+        nombre: 'Invitado offline',
+        email: 'offline@zeloura.local',
+        rol: 'cliente',
+        foto_uri: '',
+      };
+      await guardarSesionLocal(user, 'offline');
+      entrar(user, 'offline');
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  const entrar = (user, token) => {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: user.rol === 'admin' ? 'AdminReservas' : 'Inicio', params: { user, token } }],
+      });
   };
 
   return (
@@ -67,6 +102,7 @@ export default function LoginScreen({ navigation }) {
         <Text style={styles.label}>CONTRASEÑA</Text>
         <TextInput style={styles.input} placeholder="Tu contraseña" placeholderTextColor={colors.muted} secureTextEntry value={password} onChangeText={setPassword} />
         <Pressable style={[styles.button, cargando && styles.buttonDisabled]} disabled={cargando} onPress={handleLogin}><Text style={styles.buttonText}>{cargando ? 'Ingresando…' : 'Ingresar'}</Text><Text style={styles.arrow}>→</Text></Pressable>
+        <Pressable style={styles.offlineButton} disabled={cargando} onPress={continuarSinConexion}><Text style={styles.offlineText}>Continuar sin conexión</Text></Pressable>
       </View>
       <Pressable style={styles.linkButton} onPress={() => navigation.navigate('Register')}><Text style={styles.linkText}>¿Primera vez en Z'eloura? <Text style={styles.linkStrong}>Crea tu cuenta</Text></Text></Pressable>
     </KeyboardAvoidingView>
@@ -90,6 +126,8 @@ const styles = StyleSheet.create({
   buttonDisabled: { opacity: 0.55 },
   buttonText: { color: colors.black, fontSize: 15, fontWeight: '800' },
   arrow: { color: colors.black, fontSize: 22, fontWeight: '800' },
+  offlineButton: { alignItems: 'center', paddingTop: 18 },
+  offlineText: { color: colors.caramelLight, fontSize: 13, fontWeight: '800' },
   linkButton: { alignItems: 'center', paddingTop: 24 },
   linkText: { color: colors.muted, fontSize: 13 },
   linkStrong: { color: colors.caramelLight, fontWeight: '800' },

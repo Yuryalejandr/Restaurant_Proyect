@@ -3,7 +3,6 @@ import {
   Alert,
   Image,
   Pressable,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,6 +13,7 @@ import { guardarReservaLocal } from '../database/sqlite';
 import { sincronizarConBackend } from '../api/sync';
 import { colors } from '../theme';
 import { API_URL } from '../api/config';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const horas = ['12:30', '13:30', '18:30', '19:30', '20:30', '21:30'];
 const zonas = ['Salón principal', 'Terraza', 'Bar'];

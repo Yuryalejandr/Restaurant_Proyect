@@ -24,9 +24,16 @@ const getDatabase = async () => {
     CREATE TABLE IF NOT EXISTS sesion_local (
       id INTEGER PRIMARY KEY NOT NULL,
       usuario TEXT NOT NULL,
-      token TEXT NOT NULL
+      token TEXT NOT NULL,
+      password_hash TEXT
     );
   `);
+
+  try {
+    await db.execAsync('ALTER TABLE sesion_local ADD COLUMN password_hash TEXT;');
+  } catch {
+    // La columna ya existe.
+  }
 
   // Compatibilidad con la base local creada por versiones anteriores.
   for (const column of ['plato TEXT', 'nota TEXT', 'foto_uri TEXT']) {
@@ -82,9 +89,15 @@ export const obtenerTodasReservasLocales = async () => {
   return db.getAllAsync('SELECT * FROM reservas_local ORDER BY fecha ASC, hora ASC;');
 };
 
-export const guardarSesionLocal = async (user, token) => {
+export const guardarSesionLocal = async (user, token, passwordHash = null) => {
   const db = await getDatabase();
-  await db.runAsync('INSERT OR REPLACE INTO sesion_local (id, usuario, token) VALUES (1, ?, ?);', JSON.stringify(user), token);
+  const sesionAnterior = await db.getFirstAsync('SELECT password_hash FROM sesion_local WHERE id = 1;');
+  await db.runAsync(
+    'INSERT OR REPLACE INTO sesion_local (id, usuario, token, password_hash) VALUES (1, ?, ?, ?);',
+    JSON.stringify(user),
+    token,
+    passwordHash || sesionAnterior?.password_hash || ''
+  );
 };
 
 export const obtenerSesionLocal = async () => {
@@ -92,6 +105,11 @@ export const obtenerSesionLocal = async () => {
   const sesion = await db.getFirstAsync('SELECT usuario, token FROM sesion_local WHERE id = 1;');
   if (!sesion) return null;
   try { return { user: JSON.parse(sesion.usuario), token: sesion.token }; } catch { return null; }
+};
+
+export const obtenerCredencialLocal = async () => {
+  const db = await getDatabase();
+  return db.getFirstAsync('SELECT usuario, token, password_hash FROM sesion_local WHERE id = 1;');
 };
 
 export const borrarSesionLocal = async () => {
